@@ -83,6 +83,28 @@ class InventoryAppTests(unittest.TestCase):
         with self.app.app_context():
             self.assertIsNone(get_db().execute("SELECT id FROM products WHERE sku = 'BIG-001'").fetchone())
 
+    def test_public_demo_is_read_only_and_hides_edit_forms(self):
+        read_only_db = str(Path(self.temp_dir.name) / "read-only.db")
+        read_only_app = create_app({
+            "TESTING": True, "SECRET_KEY": "test", "DATABASE": read_only_db, "READ_ONLY_DEMO": True
+        })
+        client = read_only_app.test_client()
+        page = client.get("/").get_data(as_text=True)
+        self.assertIn("Demonstração pública", page)
+        self.assertNotIn('action="/produtos"', page)
+        self.assertNotIn('action="/movimentacoes"', page)
+        with read_only_app.app_context():
+            before = get_db().execute("SELECT quantity FROM products WHERE sku = 'CAB-001'").fetchone()[0]
+        response = client.post("/movimentacoes", data={
+            "product_id": "1", "movement_type": "entrada", "quantity": "5"
+        }, follow_redirects=True)
+        self.assertIn("somente para consulta", response.get_data(as_text=True))
+        with read_only_app.app_context():
+            db = get_db()
+            after = db.execute("SELECT quantity FROM products WHERE sku = 'CAB-001'").fetchone()[0]
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM movements WHERE movement_type = 'entrada'").fetchone()[0], 6)
+        self.assertEqual(after, before)
+
     def test_csv_export_includes_headers_and_utf8_bom(self):
         response = self.client.get("/exportar/movimentacoes.csv")
         self.assertEqual(response.status_code, 200)

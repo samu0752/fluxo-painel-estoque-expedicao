@@ -52,6 +52,7 @@ def create_app(test_config: dict | None = None) -> Flask:
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("SECRET_KEY", "local-demo-key-change-before-deployment"),
         DATABASE=os.environ.get("DATABASE_PATH", str(Path(app.instance_path) / "estoque.db")),
+        READ_ONLY_DEMO=os.environ.get("READ_ONLY_DEMO", "").strip().lower() in {"1", "true", "yes"},
     )
     if test_config:
         app.config.update(test_config)
@@ -118,10 +119,15 @@ def create_app(test_config: dict | None = None) -> Flask:
             query=query,
             selected_category=category,
             now=datetime.now().astimezone(),
+            read_only_demo=current_app.config["READ_ONLY_DEMO"],
         )
 
     @app.post("/produtos")
     def add_product():
+        if current_app.config["READ_ONLY_DEMO"]:
+            flash("Esta demonstração pública é somente para consulta.", "error")
+            return redirect(url_for("index"))
+
         sku = request.form.get("sku", "").strip().upper()
         name = request.form.get("name", "").strip()
         category = request.form.get("category", "").strip()
@@ -160,6 +166,10 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     @app.post("/movimentacoes")
     def add_movement():
+        if current_app.config["READ_ONLY_DEMO"]:
+            flash("Esta demonstração pública é somente para consulta.", "error")
+            return redirect(url_for("index"))
+
         product_id = parse_positive_int(request.form.get("product_id"))
         quantity = parse_positive_int(request.form.get("quantity"))
         movement_type = request.form.get("movement_type", "").strip().lower()

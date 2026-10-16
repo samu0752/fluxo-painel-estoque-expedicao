@@ -57,6 +57,8 @@ O projeto usa uma arquitetura enxuta com três partes principais:
 
 O uso de SQLite mantém a instalação simples e suficiente para um protótipo local. A aplicação usa consultas parametrizadas para entradas dos formulários e ativa a verificação de chaves estrangeiras em cada conexão.
 
+Para a demonstração online, `render.yaml` define um serviço Flask com Gunicorn e um endpoint de saúde. A variável `READ_ONLY_DEMO` oculta os formulários e bloqueia operações de cadastro e movimentação. Essa configuração evita que visitantes alterem os dados compartilhados. O serviço gratuito do Render usa armazenamento temporário e pode suspender quando fica sem tráfego; os dados fictícios são semeados novamente quando a aplicação inicia.
+
 ## 5. Modelo de dados
 
 ### `products`
@@ -111,7 +113,8 @@ A suíte baseada em `unittest` cria um banco temporário e verifica:
 - bloqueio de uma saída maior que o saldo;
 - rejeição de SKU duplicado e de quantidades fora do limite do SQLite;
 - registro de entrada correspondente ao saldo inicial do produto;
-- geração de CSV com cabeçalho, conteúdo, codificação adequada e proteção contra fórmulas precedidas por espaços.
+- geração de CSV com cabeçalho, conteúdo, codificação adequada e proteção contra fórmulas precedidas por espaços;
+- modo público de somente leitura, incluindo bloqueio de gravações pelas rotas.
 
 Execute com `python -m unittest discover -s tests -v` depois de instalar as dependências do arquivo `requirements.txt`.
 

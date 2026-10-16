@@ -52,6 +52,10 @@ py -m unittest discover -s tests -v
 
 Os testes cobrem inicialização com dados de demonstração, entradas e saídas, prevenção de estoque negativo, rejeição de SKU duplicado, validação de quantidades fora do limite do SQLite e neutralização de fórmulas na exportação CSV.
 
+## Demonstração online
+
+O arquivo `render.yaml` configura uma publicação gratuita no Render com Gunicorn, verificação de saúde e modo somente leitura. Depois que o serviço estiver conectado ao repositório no Render, os próximos commits na branch `main` podem atualizar a demonstração automaticamente. No plano gratuito, o serviço pode suspender após inatividade e o sistema de arquivos é temporário; por isso, o banco de demonstração é recriado e qualquer alteração local se perde. Os formulários de cadastro e movimentação ficam desativados na versão online.
+
 ## Estrutura
 
 ```text
@@ -62,6 +66,7 @@ static/app.js                  pequenos aprimoramentos de interface
 tests/test_app.py              testes das regras de negócio
 docs/relatorio-tecnico.md      relatório técnico do projeto
 requirements.txt               dependências Python
+render.yaml                    configuração de hospedagem no Render
 ```
 
 ## Regras e limites do protótipo

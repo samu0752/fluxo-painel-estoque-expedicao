@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: fluxo-painel-estoque-expedicao
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /saude
+    envVars:
+      - key: READ_ONLY_DEMO
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
